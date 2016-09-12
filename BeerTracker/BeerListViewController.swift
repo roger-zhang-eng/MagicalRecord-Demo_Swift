@@ -30,7 +30,7 @@ class BeerListViewController: UITableViewController {
   //#####################################################################
   // MARK: - Initialization
   
-  required init(coder aDecoder: NSCoder) {
+  required init?(coder aDecoder: NSCoder) {
     // Automatically invoked by UIKit as it loads the view controller from the storyboard.
     
     amRatingCtl = AMRatingControl(location: CGPointMake(190, 10),
@@ -39,7 +39,7 @@ class BeerListViewController: UITableViewController {
                               andMaxRating: 5)    
     
     // A call to super is required after all variables and constants have been assigned values but before anything else is done.
-    super.init(coder: aDecoder)!
+    super.init(coder: aDecoder)
   }
   //#####################################################################
   // MARK: - Segues

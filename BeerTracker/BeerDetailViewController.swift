@@ -54,7 +54,7 @@ class BeerDetailViewController: UITableViewController {
   //#####################################################################
   // MARK: - Initialization
   
-  required init(coder aDecoder: NSCoder) {
+  required init?(coder aDecoder: NSCoder) {
     // Automatically invoked by UIKit as it loads the view controller from the storyboard.
 
     amRatingCtl = AMRatingControl(location: CGPointMake(95, 66),
@@ -63,7 +63,7 @@ class BeerDetailViewController: UITableViewController {
                               andMaxRating: 5)
 
     // A call to super is required after all variables and constants have been assigned values but before anything else is done.
-    super.init(coder: aDecoder)!
+    super.init(coder: aDecoder)
     
     amRatingCtl.addTarget(self, action: "updateRating", forControlEvents: UIControlEvents.TouchUpInside)
   }
@@ -81,7 +81,7 @@ class BeerDetailViewController: UITableViewController {
     beerNotesView.layer.borderWidth = 1.0
     
     //------------------------------------------
-    if let beer = currentBeer {
+    if currentBeer != nil {
       // A beer exists.  EDIT Mode.
       
     } else {
@@ -93,7 +93,7 @@ class BeerDetailViewController: UITableViewController {
     //------------------------------------------
     let details: BeerDetails? = currentBeer.beerDetails
     
-    if let bDetails = details {
+    if details != nil {
       // Beer Details exist.  EDIT Mode.
       
     } else {
