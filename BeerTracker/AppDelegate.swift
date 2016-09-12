@@ -2,8 +2,7 @@
 //  AppDelegate.swift
 //  BeerTracker
 //
-//  Created by Ed on 4/24/15.
-//  Copyright (c) 2015 Anros Applications, LLC. All rights reserved.
+//  Copyright (c) 2015 Ray Wenderlich. All rights reserved.
 //
 
 import UIKit
@@ -17,12 +16,93 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
     // Override point for customization after application launch.
     
-    // If the data model filename (Beer) is identical to the Project name (BeerTracker), the following convenience method can be used instead.
-    //MagicalRecord.setupCoreDataStack()
     MagicalRecord.setupCoreDataStackWithStoreNamed("Beer")
+    // NOTE: If the data model filename (Beer) is identical to the Project name (BeerTracker), the following convenience method can be used instead.  Since they are different, the line above must be used.
+    //MagicalRecord.setupCoreDataStack()
+   
+    //------------------------------------------
+    // Prepopulate Beer
     
+    // This prevents the default data from getting loaded more than once.
+    let preloadKey = NSUserDefaults.standardUserDefaults().objectForKey("MR_HasPrefilledBeers") as? String
+    
+    //--------------------
+    if let preloadKey = preloadKey {
+      // Defaults have already been loaded.
+      
+      // OPTION 2: UNCOMMENT THIS LINE TO FORCE PREPOPULATING BEERS EVEN IF THEY HAVE ALREADY BEEN LOADED ONCE BEFORE.
+      //populateBeers()
+      
+    } else {
+      // Defaults have NOT been loaded.
+      
+      // OPTION 1: UNCOMMENT THIS LINE TO PREPOPULATE BEERS ONLY ONCE.
+      //populateBeers()
+    }
+    //------------------------------------------
     return true
   }
+  //#####################################################################
+  // MARK: - Prepopulate Data
+  
+  private func populateBeers() {
+    
+    //--------------------
+    // Blond Ale
+    
+    let blondAle = Beer.createEntity() as! Beer
+    blondAle.name = "Blond Ale"
+    
+    blondAle.beerDetails = BeerDetails.createEntity() as! BeerDetails
+    blondAle.beerDetails.rating = 4
+    
+    ImageSaver.saveImageToDisk(UIImage(named: "blond.jpg")!, andToBeer: blondAle)
+    
+    //--------------------
+    // Wheat Beer
+    
+    let wheatBeer = Beer.createEntity() as! Beer
+    wheatBeer.name = "Wheat Beer"
+    
+    wheatBeer.beerDetails = BeerDetails.createEntity() as! BeerDetails
+    wheatBeer.beerDetails.rating = 2
+    
+    ImageSaver.saveImageToDisk(UIImage(named: "wheat.jpg")!, andToBeer: wheatBeer)
+    
+    //--------------------
+    // Pale Lager
+    
+    let paleLager = Beer.createEntity() as! Beer
+    paleLager.name = "Pale Lager"
+    
+    paleLager.beerDetails = BeerDetails.createEntity() as! BeerDetails
+    paleLager.beerDetails.rating = 3
+    
+    ImageSaver.saveImageToDisk(UIImage(named: "pale.jpg")!, andToBeer: paleLager)
+    
+    //--------------------
+    // Stout
+    
+    let stout = Beer.createEntity() as! Beer
+    stout.name = "Stout"
+    
+    stout.beerDetails = BeerDetails.createEntity() as! BeerDetails
+    stout.beerDetails.rating = 5
+    
+    ImageSaver.saveImageToDisk(UIImage(named: "stout.jpg")!, andToBeer: stout)
+    
+    //--------------------
+    // Save
+    
+    NSManagedObjectContext.defaultContext().saveToPersistentStoreWithCompletion(nil)
+    
+    //--------------------
+    // Set User Default to Prevent Subsequent Preloads on startup.
+    
+    NSUserDefaults.standardUserDefaults().setBool(true, forKey: "MR_HasPreFilledBeers")
+    NSUserDefaults.standardUserDefaults().synchronize()
+  }
+  //#####################################################################
 
   func applicationWillResignActive(application: UIApplication) {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.

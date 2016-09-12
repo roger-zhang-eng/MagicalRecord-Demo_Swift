@@ -2,8 +2,7 @@
 //  ImageSaver.swift
 //  BeerTracker
 //
-//  Created by Ed on 4/29/15.
-//  Copyright (c) 2015 Anros Applications, LLC. All rights reserved.
+//  Copyright (c) 2015 Ray Wenderlich. All rights reserved.
 //
 
 import Foundation
@@ -19,10 +18,10 @@ class ImageSaver {
     let imgData = UIImageJPEGRepresentation(image, 0.5)
     let name = NSUUID().UUIDString
     let fileName = "\(name).jpg"
-    let pathName = applicationDocumentsDirectory.stringByAppendingPathComponent(fileName)
+    let pathName = (applicationDocumentsDirectory as NSString).stringByAppendingPathComponent(fileName)
     
     //------------------------------------------
-    if imgData.writeToFile(pathName, atomically: true) {
+    if imgData!.writeToFile(pathName, atomically: true) {
       
       beer.beerDetails.image = pathName
       
@@ -56,13 +55,13 @@ class ImageSaver {
     
     let fileManager = NSFileManager.defaultManager()
     
-    // TODO: Might need to use pathName instead of path.
-    //let pathName = applicationDocumentsDirectory.stringByAppendingPathComponent(path)
-    
     if fileManager.fileExistsAtPath(path) {
       var error: NSError?
-      if !fileManager.removeItemAtPath(path, error: &error) {
-        println("Error removing file: \(error!)")
+      do {
+        try fileManager.removeItemAtPath(path)
+      } catch let error1 as NSError {
+        error = error1
+        print("Error removing file: \(error!)")
       }
     }
   }

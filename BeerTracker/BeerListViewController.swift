@@ -2,8 +2,7 @@
 //  ViewController.swift
 //  BeerTracker
 //
-//  Created by Ed on 4/24/15.
-//  Copyright (c) 2015 Anros Applications, LLC. All rights reserved.
+//  Copyright (c) 2015 Ray Wenderlich. All rights reserved.
 //
 
 import UIKit
@@ -16,9 +15,9 @@ class BeerListViewController: UITableViewController {
   
   var beers: [Beer]!
   
-  let SORT_KEY_NAME   = "name"
-  let SORT_KEY_RATING = "beerDetails.rating"
-  let WB_SORT_KEY     = "WB_SORT_KEY"
+  let sortKeyName   = "name"
+  let sortKeyRating = "beerDetails.rating"
+  let wbSortKey     = "wbSortKey"
 
   //------------------------------------------
   // Rating
@@ -37,10 +36,10 @@ class BeerListViewController: UITableViewController {
     amRatingCtl = AMRatingControl(location: CGPointMake(190, 10),
                                 emptyImage: beerEmptyImage,
                                 solidImage: beerFullImage,
-                              andMaxRating: 5)
+                              andMaxRating: 5)    
     
     // A call to super is required after all variables and constants have been assigned values but before anything else is done.
-    super.init(coder: aDecoder)
+    super.init(coder: aDecoder)!
   }
   //#####################################################################
   // MARK: - Segues
@@ -54,7 +53,7 @@ class BeerListViewController: UITableViewController {
     
     if segue.identifier == "editBeer" {
       
-      let indexPath = tableView.indexPathForSelectedRow()
+      let indexPath = tableView.indexPathForSelectedRow
       
       let beerSelected = beers[indexPath!.row]
       controller!.currentBeer = beerSelected
@@ -83,6 +82,19 @@ class BeerListViewController: UITableViewController {
     
     super.viewWillAppear(animated)
     
+    //------------------------------------------
+    // Sorting Key
+    
+    if !(NSUserDefaults.standardUserDefaults().objectForKey(wbSortKey) != nil) {
+      // User's sort preference has not been saved.  Set default to sort by rating.
+      NSUserDefaults.standardUserDefaults().setObject(sortKeyRating, forKey: wbSortKey)
+    }
+    
+    // Keep the sort control in the UI in sync with the means by which the list is sorted.
+    if NSUserDefaults.standardUserDefaults().objectForKey(wbSortKey) as! String == sortKeyName {
+      sortByControl.selectedSegmentIndex = 1
+    }
+    //------------------------------------------
     fetchAllBeers()
     
     // Cause tableView(cellForRowAtIndexPath) to be called again for every visible row in order to update the table.
@@ -109,12 +121,12 @@ class BeerListViewController: UITableViewController {
     switch sender.selectedSegmentIndex {
       
     case 0:
-      NSUserDefaults.standardUserDefaults().setObject(SORT_KEY_RATING, forKey: WB_SORT_KEY)
+      NSUserDefaults.standardUserDefaults().setObject(sortKeyRating, forKey: wbSortKey)
       fetchAllBeers()
       tableView.reloadData()
 
     case 1:
-      NSUserDefaults.standardUserDefaults().setObject(SORT_KEY_NAME, forKey: WB_SORT_KEY)
+      NSUserDefaults.standardUserDefaults().setObject(sortKeyName, forKey: wbSortKey)
       fetchAllBeers()
       tableView.reloadData()
 
@@ -127,8 +139,12 @@ class BeerListViewController: UITableViewController {
   
   func fetchAllBeers() {
     
-    let sortKey = NSUserDefaults.standardUserDefaults().objectForKey(WB_SORT_KEY) as? String
-    let ascending = (sortKey == SORT_KEY_RATING) ? false : true
+    // Retrieve the current sort key.
+    let sortKey = NSUserDefaults.standardUserDefaults().objectForKey(wbSortKey) as? String
+    
+    // Do not sort in ascending order if sorting by rating (i.e., sort descending).
+    // Otherwise (i.e. sorting alphabetically), sort in ascending order.
+    let ascending = (sortKey == sortKeyRating) ? false : true
     
     // Fetch records from Entity Beer using a MagicalRecord method.
     beers = Beer.findAllSortedBy(sortKey, ascending: ascending) as! [Beer]
@@ -142,9 +158,8 @@ class BeerListViewController: UITableViewController {
 }
 
 //#####################################################################
-// MARK: - Table View Data Source
-
-extension BeerListViewController: UITableViewDataSource {
+// MARK: - Table View Data Source : UITableViewDataSource
+extension BeerListViewController {
   
   //#####################################################################
   // MARK: Configuring a Table View
@@ -162,22 +177,11 @@ extension BeerListViewController: UITableViewDataSource {
   override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
     
     let cellIdentifier = "Cell"
-      
-    //------------------------------------------
-    // Use prototype cells designed in Interface Builder instead of creating the table view cell in code.
+    let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier)
     
-    // Get a copy of the prototype cell – either a new one or a recycled one.
-    // Type Cast Note:
-    //   dequeueReusableCellWithIdentifier() can return nil if there is no cell object to reuse.
-    //   When using prototpye cells, however, dequeueReusableCellWithIdentifier() will never return nil,
-    //   so a non-optional constant can be type cast using "as UITableViewCell" (as opposed to "as? UITableViewCell" for an optional).
-    let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier) as! UITableViewCell
+    configureCell(cell!, atIndex: indexPath)
     
-    //------------------------------------------
-    configureCell(cell, atIndex: indexPath)
-    
-    //------------------------------------------
-    return cell
+    return cell!
   }
   //#####################################################################
   // MARK: Helper Methods
@@ -188,33 +192,25 @@ extension BeerListViewController: UITableViewDataSource {
     cell.textLabel?.text = currentBeer.name
     
     //------------------------------------------
-    // Rating Control
+    // Rating
     
-    if let amrc = amRatingCtl as? AMRatingControl {
+    let ratingText = "\(currentBeer.beerDetails.rating!)"
+    
+    let myRect = CGRect(x:250, y:0, width:200, height:50)
+    var ratingLabel = UILabel(frame: myRect)
+    
+    if !(cell.viewWithTag(20) != nil) {
       
-      if !(cell.viewWithTag(20) != nil) {
-        
-        amrc.tag = 20
-        amrc.autoresizingMask = UIViewAutoresizing.FlexibleLeftMargin
-        amrc.userInteractionEnabled = false
-        
-        // TODO: This gets executed but no images show up in the cell.
-        cell.addSubview(amrc)
-        
-        /*
-        if let bdRating = details?.rating {
-          let theRatingControl = ratingControl()
-          theRatingControl.rating = Int(bdRating)
-          cellNameRatingImage.addSubview(theRatingControl)
-        }
-        */
-
-      } else {
-        amRatingCtl = cell.viewWithTag(20)
-      }
-      //----------------------
-      amrc.rating = Int(currentBeer.beerDetails.rating!)
+      ratingLabel.tag = 20
+      ratingLabel.text = ratingText
+      cell.addSubview(ratingLabel)
+      
+    } else {
+      ratingLabel = cell.viewWithTag(20) as! UILabel
     }
+    //----------------------
+    ratingLabel.text = ratingText
+    
   }
   //#####################################################################
   // MARK: Inserting or Deleting Table Rows
@@ -293,11 +289,11 @@ extension BeerListViewController: UISearchBarDelegate {
   func performSearch() {
     
     let searchText = searchBar.text
-    let filterCriteria = NSPredicate(format: "name contains[c] %@", searchText)
+    let filterCriteria = NSPredicate(format: "name contains[c] %@", searchText!)
     
-    beers = Beer.findAllSortedBy(SORT_KEY_NAME, ascending: true,
-                                            withPredicate: filterCriteria,
-                                                inContext: NSManagedObjectContext.defaultContext()) as? [Beer]
+    beers = Beer.findAllSortedBy(sortKeyName, ascending: true,
+                                          withPredicate: filterCriteria,
+                                              inContext: NSManagedObjectContext.defaultContext()) as? [Beer]
     tableView.reloadData()
   }
   //#####################################################################

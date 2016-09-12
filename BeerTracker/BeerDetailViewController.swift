@@ -2,8 +2,7 @@
 //  BeerDetailViewController.swift
 //  BeerTracker
 //
-//  Created by Ed on 4/27/15.
-//  Copyright (c) 2015 Anros Applications, LLC. All rights reserved.
+//  Copyright (c) 2015 Ray Wenderlich. All rights reserved.
 //
 
 import UIKit
@@ -64,38 +63,14 @@ class BeerDetailViewController: UITableViewController {
                               andMaxRating: 5)
 
     // A call to super is required after all variables and constants have been assigned values but before anything else is done.
-    super.init(coder: aDecoder)
+    super.init(coder: aDecoder)!
     
-    // Using .EditingChanged does not work.  updateRating does not fire when the rating control is changed.
-    //amRatingCtl.addTarget(self, action: "updateRating", forControlEvents: UIControlEvents.EditingChanged)
-    
-    // This works as well.
-    //amRatingCtl.addTarget(self, action: Selector("updateRating"), forControlEvents: UIControlEvents.TouchUpInside)
     amRatingCtl.addTarget(self, action: "updateRating", forControlEvents: UIControlEvents.TouchUpInside)
-    
-    // TODO:  Why is this not allowed?
-    //amRatingCtl.starSpacing = 5
-  }
-  //#####################################################################
-  // MARK: - Segues
-  
-  override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-    // TODO: The Objective-C version of BeerTracker has no way of getting to the PhotoViewController.
-    
-    // The segue’s destinationViewController is the PhotoViewController, not a UINavigationController.
-    
-    // "destinationViewController" must be cast from its generic type (AnyObject) to the specific type used in this app
-    // (PhotoViewController) before any of its properties can be accessed.
-    let controller = segue.destinationViewController as! PhotoViewController
-    
-    controller.image = imageView.image
   }
   //#####################################################################
   // MARK: - UIViewController
   
   // MARK: Managing the View
-  
-  // viewDidLoad() is called after prepareForSegue().
 
   override func viewDidLoad() {
     
@@ -233,14 +208,10 @@ class BeerDetailViewController: UITableViewController {
       amrc.starSpacing = 5
     }
     
-    // This works here, but doing it in init:coder instead.
-    //amRatingCtl.addTarget(self, action: "updateRating", forControlEvents: UIControlEvents.TouchUpInside)
-    
     return amRatingCtl as! AMRatingControl
   }
   //#####################################################################
   func updateRating() {
-    // TODO: This is a recursive call, which is how it is done in the Objective-C version.  Isn't there a better way to do this?
     currentBeer.beerDetails.rating = ratingControl().rating
   }
   //#####################################################################
@@ -256,7 +227,7 @@ extension BeerDetailViewController: UITextFieldDelegate {
     
     if textField.text != "" {
       self.title       = textField.text
-      currentBeer.name = textField.text
+      currentBeer.name = textField.text!
     }
   }
   //#####################################################################
@@ -281,8 +252,8 @@ extension BeerDetailViewController: UITextViewDelegate {
 //#####################################################################
 // MARK: - Table View Delegate
 
-extension BeerDetailViewController: UITableViewDelegate {
-}
+/*extension BeerDetailViewController: UITableViewDelegate {
+}*/
 
 //#####################################################################
 // MARK: - Gesture Recognizer Delegate
@@ -298,15 +269,10 @@ extension BeerDetailViewController: UIGestureRecognizerDelegate {
 
 extension BeerDetailViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
   
-  func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [NSObject : AnyObject]) {
+  func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
     // Called when the user has selected a photo in the image picker.
     
     // "[NSObject : AnyObject]" indicates that input parameter, info, is a dictionary with keys of type NSObject and values of type AnyObject.
-    
-    // Dictionaries always return optionals, because there is a theoretical possibility that the key for which data is being requested –
-    // UIImagePickerControllerEditedImage in this case – doesn’t actually exist in the dictionary.
-    // Under normal circumstances this optional, info[UIImagePickerControllerEditedImage], would be unwrapped,
-    // but here the image instance variable is an optional itself so no unwrapping is necessary.
     
     // Use the UIImagePickerControllerEditedImage key to retrieve a UIImage object that contains the image after the Move and Scale operations on the original image.
     image = info[UIImagePickerControllerEditedImage] as! UIImage?
@@ -315,13 +281,10 @@ extension BeerDetailViewController: UIImagePickerControllerDelegate, UINavigatio
     if let imageToDelete = currentBeer.beerDetails.image {
       ImageSaver.deleteImageAtPath(imageToDelete)
     }
-    
     //------------------------------------------
-    // TODO: Is forced unwrapping safe to use here?
     if ImageSaver.saveImageToDisk(image!, andToBeer: currentBeer) {
       showImage(image!)
     }
-    
     //------------------------------------------
     // Refresh the table view to set the photo row to the proper height to accommodate a photo (or not).
     tableView.reloadData()
@@ -424,7 +387,6 @@ extension BeerDetailViewController: UIImagePickerControllerDelegate, UINavigatio
     // By default, an image view will stretch the image to fit the entire content area.
     // To keep the image's aspect ratio intact as it is resized, in the storyboard set the Image View's MODE to Aspect Fit.
     // Properly size the image view within the Beer Name table view cell.
-    //imageView.frame = CGRect(x: 16, y: 18, width: 65, height: 65)
     
     let imageAspectRatio = image.size.width / image.size.height
     let imageViewFrameHeight = 65 / imageAspectRatio

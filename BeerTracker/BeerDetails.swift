@@ -2,8 +2,7 @@
 //  BeerDetails.swift
 //  BeerTracker
 //
-//  Created by Ed on 4/28/15.
-//  Copyright (c) 2015 Anros Applications, LLC. All rights reserved.
+//  Copyright (c) 2015 Ray Wenderlich. All rights reserved.
 //
 
 import Foundation
